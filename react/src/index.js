@@ -1,38 +1,68 @@
-import React, { lazy } from 'react';
-import ReactDOM from 'react-dom';
+// It must be imported before react-dom and react even if not used here
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import "react-hot-loader";
+import React, { lazy } from "react";
+import ReactDOM from "react-dom";
 
-import EntryWrapper from './components/EntryWrapper';
+import { renderForProd } from "./services/react-api/RenderForProd";
+import { renderForDev } from "./services/react-api/render-for-dev";
+
+import App from "./services/react-api/hot-reload/App";
 
 function renderComponent(
-    domElement,
-    Component, 
-    props,
-    injector
+  id,
+  domElement,
+  componentName,
+  Component,
+  props,
+  injector,
+  isPropUpdate
 ) {
-    ReactDOM.render(<EntryWrapper 
-        Component={Component} {...props} injector={injector}/>, domElement)
+  if (process.env.NODE_ENV === "production") {
+    return renderForProd({
+      domElement,
+      Component,
+      props,
+      injector,
+      routeParams
+    });
+  }
+
+  return renderForDev(
+    { componentName, props, isPropUpdate, domElement },
+    id,
+    destroy
+  );
 }
 
 export function bootstrap(componentName) {
-    const Component = lazy(() =>
-            import(
-                `./components/AngularEntries/${componentName}`
-            )
-        );
+  let Component = null;
+  if (process.env.NODE_ENV === "production") {
+    Component = lazy(() =>
+      import(`./components/AngularEntries/${componentName}`)
+    );
 
-    return (
-        domElement,
-        props,
-        injector
-    ) =>
-        renderComponent(
-            domElement,
-            Component,
-            props,
-            injector
-        );
+    return;
+  }
+
+  return (id, domElement, props, injector, isPropUpdate) =>
+    renderComponent(
+      id,
+      domElement,
+      componentName,
+      Component,
+      props,
+      injector,
+      isPropUpdate
+    );
 }
 
 export function destroy(domElement) {
-    ReactDOM.unmountComponentAtNode(domElement);
+  ReactDOM.unmountComponentAtNode(domElement);
+}
+
+export function renderRoot(domElement, injector) {
+  ReactDOM.render(<App injector={injector} />, domElement);
+
+  return () => destroy(domElement);
 }

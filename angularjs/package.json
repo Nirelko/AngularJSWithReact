@@ -29,6 +29,7 @@
     "angular-resource": "^1.7.9",
     "angular-route": "^1.7.9",
     "angular-sanitize": "^1.7.9",
-    "angular-ui-router": "^1.0.25"
+    "angular-ui-router": "^1.0.25",
+    "uuid": "^7.0.2"
   }
 }

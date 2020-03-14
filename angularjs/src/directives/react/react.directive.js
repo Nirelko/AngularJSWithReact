@@ -1,4 +1,5 @@
 import angular from "angular";
+import { v4 as uuidv4 } from "uuid";
 
 import { getReactLib } from "./react-lib.provider";
 
@@ -12,6 +13,7 @@ angular.module("angularjs").directive("react", () => ({
     let reactRenderFunction = null,
       reactUnrenderFunction = null;
     const $injector = angular.injector();
+    const id = uuidv4();
 
     function getProps() {
       return Object.keys(attrs)
@@ -28,20 +30,22 @@ angular.module("angularjs").directive("react", () => ({
         attrs.$observe(propName, () => {
           const props = getProps();
 
-          render(props);
+          render(props, true);
         });
       });
     }
 
-    function render(props) {
+    function render(props, isPropUpdate) {
       if (!reactRenderFunction) {
         return;
       }
 
       reactUnrenderFunction = reactRenderFunction(
+        id,
         element[0],
         props,
-        $injector
+        $injector,
+        isPropUpdate
       );
     }
 
